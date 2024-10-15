@@ -100,9 +100,12 @@ public:
     bool insert(const K &key, const V &value, typename P::plog_t plog = nullptr) {
         node_t *preds[MAX_LEVEL], *succs[MAX_LEVEL];
         node_t *pred, *succ, *node = nullptr;
+        // while insertion is not successful
         while(true) {
-            node_t *found = find_node(key, preds, succs);
-            if (found) {
+            // to find the appropriate node for the insertion, if the node with same key is found it returns that
+            // std::cout << "Inside while loop vordered_kv.hpp\n";
+            node_t *found = find_node(key, preds, succs); // else returns nullptr
+            if (found) { // if node found
                 if (node) {
                     // somebody else was faster at inserting the same key
                     if (node->history != plog)
@@ -110,17 +113,23 @@ public:
                     delete node;
                 }
                 node = found;
-            } else if (node == nullptr) {
+            } else if (node == nullptr) { // if node not found, create a new node
+            // std::cout << "If node not found.\n";
 		std::unique_lock<std::mutex> lock(rand_mutex);
 		int rand_int = rand_r(&rand_state);
 		lock.unlock();
                 int levels = ffs(rand_int | (1 << (MAX_LEVEL - 1)));
                 node = new node_t(key, levels);
+                // std::cout << "New node created.\n";
             }
-            if (plog == nullptr) {
+            if (plog == nullptr) { // 
                 if (node->history == nullptr)
+                // allocate just creates a new ekey_history object log_t, node->history points to that object
 		    node->history = pool.allocate();
+            // std::cout << "New history object created.\n";
+            // version is common for the whole of vordered_kv, it updates for the whole skip list.
                 node->history->insert(version, value);
+                // std::cout << "New value in history block inserted\n";
             } else
                 node->history = plog;
             succ = succs[0];
@@ -163,7 +172,13 @@ public:
         if (node == nullptr)
             return low_marker;
         else
-            return node->history->find(v);
+        {
+            // std::cout << "Node found.\nVersion : " << v << "\n";
+            V val = node->history->find(v);
+            // std::cout << "Value found : " << val << "\n";
+            return val;
+            // return node->history->find(v);
+        }  
     }
 
     void get_snapshot(int v, std::vector<std::pair<K, V>> &result) {
@@ -185,6 +200,37 @@ public:
             return;
         node->history->copy_to(result);
     }
+
+    size_t get_total_size() const {
+        size_t total = 0;
+        node_t* curr = head.next[0].load();
+        while (curr != &tail) {
+            if (curr->history) {
+                total += curr->history->size();
+            }
+            curr = curr->next[0].load();
+        }
+        return total;
+    }
+
+    void print_all_key_values() const {
+    // std::cout << "Inside print function.\n";
+    node_t *curr = head.next[0].load();
+    // std::cout << "Loaded the head.\n";
+    while (curr != &tail) {
+        // std::cout << "Key: " << curr->key << std::endl << std::endl << std::endl;
+        std::vector<std::pair<int, V>> history;
+        curr->history->copy_to(history);
+        // std::cout << "History copied.\n";
+        int count = 0;
+        for (const auto& entry : history) {
+            count++;
+            std::cout << count << "  Timestamp: " << entry.first << ", Value: " << entry.second << std::endl;
+        }
+        curr = curr->next[0].load();
+    }
+    // std::cout << "End of the print function.\n";
+}
 
     int latest() {
         return version;

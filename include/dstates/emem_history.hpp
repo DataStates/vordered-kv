@@ -16,11 +16,18 @@ public:
     int restore(std::function<bool (const K &, const V &, plog_t)> inserter) {
 	return 0;
     }
+    // creates new ekey_history object and calls any ekey_history constructor if any
     plog_t allocate() {
 	return new log_t();
     }
+    // void deallocate(plog_t ptr, bool cleanup = false) {
+	// delete ptr;
+    // }
     void deallocate(plog_t ptr, bool cleanup = false) {
-	delete ptr;
+    if (cleanup && ptr) {
+        ptr->cleanup();
+    }
+    delete ptr;
     }
     void append(const K &key, plog_t kh) { }
 };
