@@ -133,8 +133,8 @@ template <class Map> void run_bench(Map &vmap, bool ephemeral, int bench_id, int
 	run_insert(vmap, N, t);
 	run_extract_find(vmap, N, 1, t);
 	run_remove(vmap, N, int(std::trunc(N * 0.9)), t); // remove 90% of elements
-	if constexpr(std::is_same<Map, vordered_kv_t<int, int, pmem_history_t<int, int>, true>>::value
-		     || std::is_same<Map, vordered_kv_t<int, int, pmem_history_t<int, int>, false>>::value) {
+	if constexpr(std::is_same<Map, vordered_kv_t<int, int, true, pmem_history_t<int, int>, true>>::value
+		     || std::is_same<Map, vordered_kv_t<int, int, true, pmem_history_t<int, int>, false>>::value) {
 	    vmap.scrub();
 	    vmap.clear_stats();
 	}
@@ -145,17 +145,17 @@ template <class Map> void run_bench(Map &vmap, bool ephemeral, int bench_id, int
 
 void run_for_approach(const std::string &approach, int bench_id, int N, int t, const std::string &db, bool shared) {
     if (approach == "e_vordered_kv_t") {
-        vordered_kv_t<int, int, emem_history_t<int, int>, true, true> map(db);
+        vordered_kv_t<int, int, true, emem_history_t<int, int>, true> map(db);
 	run_bench(map, true, bench_id, N, t);
     } else if (approach == "locked_map_t") {
         locked_map_t<int, int> map;
         run_bench(map, true, bench_id, N, t);
     } else if (approach == "p_vordered_kv_t") {
-        vordered_kv_t<int, int, pmem_history_t<int, int>, false, true> map(db);
+        vordered_kv_t<int, int, true, pmem_history_t<int, int>, false> map(db);
 	run_bench(map, false, bench_id, N, t);
 	DBG("stats: " << map.get_stats());
     } else if (approach == "ps_vordered_kv_t") {
-        vordered_kv_t<int, int, pmem_history_t<int, int>, true, true> map(db);
+        vordered_kv_t<int, int, true, pmem_history_t<int, int>, true> map(db);
 	run_bench(map, false, bench_id, N, t);
 	DBG("stats: " << map.get_stats());
     } else if (approach == "sqlite_wrapper_t") {

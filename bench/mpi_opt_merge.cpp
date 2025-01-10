@@ -273,10 +273,10 @@ int main(int argc, char **argv) {
 
     DBG("Starting approach " << approach);
     if (approach == "skiplist_t") {
-        vordered_kv_t<int, int, emem_history_t<int, int>> map(db);
+        vordered_kv_t<int, int, true, emem_history_t<int, int>> map(db);
         run_tests(map, N);
     } else if (approach =="pskiplist_t") {
-        vordered_kv_t<int, int, pmem_history_t<int, int>> map(db);
+        vordered_kv_t<int, int, true, pmem_history_t<int, int>> map(db);
         run_tests(map, N);
     } else if (approach == "locked_map_t") {
         locked_map_t<int, int> map;

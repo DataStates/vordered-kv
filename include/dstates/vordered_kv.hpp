@@ -8,7 +8,7 @@
 #include <atomic>
 #include <functional>
 
-template <typename K, typename V, typename P = pmem_history_t <K, V>, bool use_shortcuts = true, bool atomic_tag = false> class vordered_kv_t {
+template <typename K, typename V, bool atomic_tag = false, typename P = pmem_history_t <K, V>, bool use_shortcuts = true> class vordered_kv_t {
     static const int MAX_LEVEL = 24;
 
     struct node_t {
