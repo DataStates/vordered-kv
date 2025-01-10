@@ -144,18 +144,18 @@ template <class Map> void run_bench(Map &vmap, bool ephemeral, int bench_id, int
 }
 
 void run_for_approach(const std::string &approach, int bench_id, int N, int t, const std::string &db, bool shared) {
-    if (approach == "skiplist_t") {
-        vordered_kv_t<int, int, emem_history_t<int, int>> map(db);
+    if (approach == "e_vordered_kv_t") {
+        vordered_kv_t<int, int, emem_history_t<int, int>, true, true> map(db);
 	run_bench(map, true, bench_id, N, t);
     } else if (approach == "locked_map_t") {
         locked_map_t<int, int> map;
         run_bench(map, true, bench_id, N, t);
-    } else if (approach == "vordered_kv_t") {
-        vordered_kv_t<int, int, pmem_history_t<int, int>, false> map(db);
+    } else if (approach == "p_vordered_kv_t") {
+        vordered_kv_t<int, int, pmem_history_t<int, int>, false, true> map(db);
 	run_bench(map, false, bench_id, N, t);
 	DBG("stats: " << map.get_stats());
-    } else if (approach == "vordered_kv_t_scut") {
-        vordered_kv_t<int, int, pmem_history_t<int, int>, true> map(db);
+    } else if (approach == "ps_vordered_kv_t") {
+        vordered_kv_t<int, int, pmem_history_t<int, int>, true, true> map(db);
 	run_bench(map, false, bench_id, N, t);
 	DBG("stats: " << map.get_stats());
     } else if (approach == "sqlite_wrapper_t") {

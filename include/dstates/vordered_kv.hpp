@@ -8,7 +8,7 @@
 #include <atomic>
 #include <functional>
 
-template <typename K, typename V, typename P = pmem_history_t <K, V>, bool use_shortcuts = true> class vordered_kv_t {
+template <typename K, typename V, typename P = pmem_history_t <K, V>, bool use_shortcuts = true, bool atomic_tag = false> class vordered_kv_t {
     static const int MAX_LEVEL = 24;
 
     struct node_t {
@@ -120,7 +120,10 @@ public:
             if (plog == nullptr) {
                 if (node->history == nullptr)
 		    node->history = pool.allocate();
-                node->history->insert(version, value);
+		if constexpr(atomic_tag)
+                    node->history->insert(version++, value);
+		else
+		    node->history->insert(version, value);
             } else
                 node->history = plog;
             succ = succs[0];
@@ -191,7 +194,11 @@ public:
     }
 
     int tag() {
-        return version++;
+	if constexpr(atomic_tag) {
+	    ERROR("cannot explicitly tag() if atomic_tag is active");
+	    return version;
+	} else
+	    return version++;
     }
 
     void clear_stats() {
