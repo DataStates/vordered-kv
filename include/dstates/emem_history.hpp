@@ -11,7 +11,7 @@ public:
     typedef ekey_history_t<V> log_t;
     typedef log_t* plog_t;
 
-    emem_history_t(const std::string &db) { }
+    emem_history_t(const std::string &db_name, size_t db_size) { }
     ~emem_history_t() { }
     int restore(std::function<bool (const K &, const V &, plog_t)> inserter) {
 	return 0;

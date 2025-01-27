@@ -10,6 +10,7 @@
 
 template <typename K, typename V, bool atomic_tag = false, typename P = pmem_history_t <K, V>, bool use_shortcuts = true> class vordered_kv_t {
     static const int MAX_LEVEL = 24;
+    static const size_t PMEM_POOL_SIZE = 1 << 30; // 1 GiB
 
     struct node_t {
         typedef std::atomic<node_t *> next_t;
@@ -31,7 +32,7 @@ public:
     inline static const V low_marker = marker_t<V>::low_marker;
     inline static const V high_marker = marker_t<V>::high_marker;
 
-    vordered_kv_t(const std::string &db) : head(low_marker), tail(high_marker), pool(db) {
+    vordered_kv_t(const std::string &db_name, size_t db_size = PMEM_POOL_SIZE) : head(low_marker), tail(high_marker), pool(db_name, db_size) {
         for (int i = 0; i < MAX_LEVEL; i++)
             head.next[i].store(&tail);
 	using namespace std::placeholders;

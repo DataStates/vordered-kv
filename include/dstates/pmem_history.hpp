@@ -32,16 +32,16 @@ private:
     pool_t pool;
 
 public:
-    pmem_history_t(const std::string &db) {
-	if (access(db.c_str(), F_OK) != 0) {
-            pool = pmem::obj::pool<root_t>::create(db, POOL_NAME, 1 << 30);
+    pmem_history_t(const std::string &db_name, size_t db_size) {
+	if (access(db_name.c_str(), F_OK) != 0) {
+            pool = pmem::obj::pool<root_t>::create(db_name, POOL_NAME, db_size);
 	    pmem::obj::transaction::run(pool, [&] {
 		pool.root()->keymap = pmem::obj::make_persistent<keymap_t>();
 	    });
-            DBG("created a new pmembobj pool, path = " << db);
+            DBG("created a new pmembobj pool, path = " << db_name);
         } else {
-            pool = pmem::obj::pool<root_t>::open(db, POOL_NAME);
-            DBG("opened an existing pmemobj pool, path = " << db);
+            pool = pmem::obj::pool<root_t>::open(db_name, POOL_NAME);
+            DBG("opened an existing pmemobj pool, path = " << db_name);
 	}
     }
     ~pmem_history_t() {
